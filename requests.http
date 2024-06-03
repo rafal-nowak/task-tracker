@@ -1,0 +1,15 @@
+### App info
+GET localhost:8080/api/info
+
+
+### All tasks
+GET localhost:8080/api/tasks
+
+
+### Create task
+POST localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "description": "Simple task"
+}
