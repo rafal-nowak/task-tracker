@@ -35,7 +35,7 @@ jobs:
         run: mvn -ntp -B verify -Ddocker.image.tag=${{steps.build-number.outputs.BUILD_NUMBER}} jib:build
       - name: Prepare deployment
         run: |
-          sed -i 's/${TAG}/'${{steps.build-number.outputs.BUILD_NUMBER}}'/g' ../devops/docker-stack.yml
+          sed -i 's/\${TAG}/'${{ steps.build-number.outputs.BUILD_NUMBER }}'/g' ../devops/docker-stack.yml
           - name: Deploy to Docker Swarm
             env:
               DIGITAL_OCEAN_SSH_PRIVATE_KEY: ${{ secrets.DIGITAL_OCEAN_SSH_PRIVATE_KEY }}
