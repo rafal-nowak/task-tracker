@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    image: rafalnowak444/task-tracker:${TAG}
+    ports:
+      - "8080:8080"
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    networks:
+      - webnet
+
+networks:
+  webnet:

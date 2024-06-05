@@ -33,3 +33,19 @@ jobs:
         run: echo "BUILD_NUMBER=$(date '+%d.%m.%Y.%H.%M.%S')" >> $GITHUB_OUTPUT
       - name: Build Package Push with Maven
         run: mvn -ntp -B verify -Ddocker.image.tag=${{steps.build-number.outputs.BUILD_NUMBER}} jib:build
+      - name: Prepare deployment
+        run: |
+          sed -i 's/${TAG}/'${{steps.build-number.outputs.BUILD_NUMBER}}'/g' ../devops/docker-stack.yml
+          - name: Deploy to Docker Swarm
+            env:
+              DIGITAL_OCEAN_SSH_PRIVATE_KEY: ${{ secrets.DIGITAL_OCEAN_SSH_PRIVATE_KEY }}
+              DIGITAL_OCEAN_SSH_USER: ${{ vars.DIGITAL_OCEAN_SSH_USER }}
+              DIGITAL_OCEAN_SSH_HOST: ${{ vars.DIGITAL_OCEAN_SSH_HOST }}
+            run: |
+              echo "${{ secrets.DIGITAL_OCEAN_SSH_PRIVATE_KEY }}" > key.pem
+              chmod 600 key.pem
+              scp -o StrictHostKeyChecking=no -i key.pem ../devops/docker-stack.yml ${{ vars.DIGITAL_OCEAN_SSH_USER }}@${{ vars.DIGITAL_OCEAN_SSH_HOST }}:/tmp/docker-stack.yml
+              ssh -o StrictHostKeyChecking=no -i key.pem ${{ vars.DIGITAL_OCEAN_SSH_USER }}@${{ vars.DIGITAL_OCEAN_SSH_HOST }} << EOF
+                docker stack deploy -c /tmp/docker-stack.yml myapp
+              EOF
+              rm key.pem
